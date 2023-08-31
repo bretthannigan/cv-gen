@@ -1,0 +1,130 @@
+% cv.tex
+%
+% (c) 2002 Matthew Boedicker <mboedick@mboedick.org> (original author) http://mboedick.org
+% (c) 2003-2007 David J. Grant <davidgrant-at-gmail.com> http://www.davidgrant.ca
+% (c) 2007-2014 Todd C. Miller <Todd.Miller@courtesan.com> http://www.courtesan.com/todd
+%
+% This work is licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative Commons, 171 Second Street, Suite 300, San Francisco, California, 94105, USA.
+
+\documentclass[11pt]{article}
+\usepackage{luacode}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{geometry}
+\geometry{letterpaper, portrait, top=0.5in, bottom=1in, left=0.5in, right=0.5in}
+\usepackage[super]{nth}
+\usepackage{siunitx}
+\usepackage[style=ieee, sorting=ydnt]{biblatex}
+%\usepackage{helvet}
+%\renewcommand{\familydefault}{\sfdefault}
+
+% load json file
+\begin{luacode}
+	require("lualibs.lua")
+	local file = io.open("resume-sample.json")
+	local s = file:read('*a')
+	tab = utilities.json.tolua(s)
+	file:close()
+\end{luacode}
+
+%-----------------------------------------------------------
+%\usepackage[empty]{fullpage}
+%\usepackage{color}
+%\definecolor{mygrey}{gray}{0.80}
+\raggedbottom
+%\raggedright
+%\setlength{\tabcolsep}{0in}
+\setlength\parindent{0pt}
+
+%% Adjust margins to 0.5in on all sides
+%\addtolength{\oddsidemargin}{-0.5in}
+%\addtolength{\evensidemargin}{-0.5in}
+%\addtolength{\textwidth}{1.0in}
+%\addtolength{\topmargin}{-0.5in}
+%\addtolength{\textheight}{1.0in}
+
+%-----------------------------------------------------------
+%Custom commands
+\newcommand{\resitem}[1]{\item #1 \vspace{-6pt}}
+\newcommand{\resheading}[1]{\vspace{6pt}{\large \fbox{\begin{minipage}{\textwidth}{{#1 \vphantom{p\^{E}}}}\end{minipage}}}\vspace{6pt}}
+\newcommand{\ressubheading}[4]{
+\vspace{4pt}
+\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}r}
+		\textbf{#1} & #2 \\
+		\textit{#3} & \textit{#4} \\
+\end{tabular*}}
+\newcommand{\ressubheadingtop}[2]{
+\vspace{4pt}
+\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}r}
+		\textbf{#1} & \textit{#2} \\
+\end{tabular*}}
+\newcommand{\ressubheadingbot}[2]{
+\vspace{4pt}
+\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}r}
+		\textit{#1} & \textit{#2} \\
+\end{tabular*}}
+\newcommand{\cpp}{C\nolinebreak\hspace{-.05em}\raisebox{.4ex}{\tiny\bf +}\nolinebreak\hspace{-.10em}\raisebox{.4ex}{\tiny\bf +}}
+
+\newcommand{\plus}{\raisebox{.4\height}{\scalebox{.6}{+}}}
+\newcommand{\minus}{\raisebox{.4\height}{\scalebox{.8}{-}}}
+
+\renewcommand\refname{}
+\addbibresource{papers-sample.bib}
+%-----------------------------------------------------------
+
+
+\begin{document}
+
+% Header
+\begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}r}
+	\textbf{\large \directlua{tex.print(tab["basics"]["name"])}}  & \directlua{tex.print(tab["basics"]["phone"])}\\
+	\directlua{tex.print(tab["basics"]["location"]["address"])} &  \texttt{\directlua{tex.print(tab["basics"]["email"])}} \\
+	\directlua{tex.print(tab["basics"]["location"]["postalCode"])}\ \directlua{tex.print(tab["basics"]["location"]["city"])}\\
+	\directlua{tex.print(tab["basics"]["location"]["country"])} &\\
+\end{tabular*}
+\\
+
+\vspace{0.1in}
+
+\directlua{
+	if (tab.education) then
+		tex.print('\noexpand\\resheading{Education}')
+		
+		for i,k in ipairs(tab["education"]) do
+			tex.print('\noexpand\\ressubheading{', k.institution, '}{', k.location, '}{', k.studyType, '}{', k.startDate, '--', k.endDate, '}')
+			tex.print('\noexpand\\begin{itemize}')
+			if (k.notes) then
+				for i,k in ipairs(k.notes) do
+					tex.print('\noexpand\\resitem{', k, '}')
+				end
+				tex.print('\noexpand\\end{itemize}')
+			end
+		end
+	end
+}
+
+\directlua{
+	if (tab.experience) then
+		tex.print('\noexpand\\resheading{Experience}')
+	
+		for i,k in ipairs(tab["experience"]) do
+			tex.print('\noexpand\\ressubheading{', k.name, '}{', k.location, '}{', k.position, '}{', k.startDate, '--', k.endDate, '}')
+			tex.print('\noexpand\\begin{itemize}')
+			if (k.notes) then
+				for i,k in ipairs(k.notes) do
+					tex.print('\noexpand\\resitem{', k, '}')
+				end
+				tex.print('\noexpand\\end{itemize}')
+			end
+		end
+	end
+}
+
+\nocite{*}
+%\bibliographystyle{ieeetr}
+
+\resheading{Publications}
+\printbibliography[heading=none]
+
+\end{document}
